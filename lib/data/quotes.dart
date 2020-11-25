@@ -6,9 +6,12 @@ import "package:html/dom.dart" as dom;
 class Quotes {
   Quote quote = Quote();
   List<Quote> quotesData = List<Quote>();
+  String url;
+  var linkOnNextPage;
+
+  Quotes({this.url, this.linkOnNextPage});
 
   Future<void> getQuotes() async {
-    final String url = 'https://bash.im/abyss/';
     dom.Document document = dom.Document();
 
     final response = await http.get(url);
@@ -20,8 +23,12 @@ class Quotes {
     }
 
     var quoteDocBody = document.getElementsByClassName('quote__body');
+
     var quoteDocNumber =
         document.getElementsByClassName('quote__header_permalink');
+
+    linkOnNextPage =
+        document.getElementsByClassName('more__link')[0].attributes['href'];
 
     // Вот тут список ок, заполнен данными
     for (int i = 0; i < quoteDocBody.length; i++) {

@@ -2,6 +2,8 @@ import 'package:bash_app/data/quote.dart';
 import 'package:bash_app/data/quotes.dart';
 import 'package:flutter/material.dart';
 
+Color orangeColor = Colors.yellow[900];
+
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key key}) : super(key: key);
 
@@ -24,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Text(
             ' Im<-',
-            style: TextStyle(color: Colors.yellow[900]),
+            style: TextStyle(color: orangeColor),
           )
         ]),
       ),
@@ -41,14 +43,20 @@ class BodyHomeScreen extends StatefulWidget {
 }
 
 class _BodyHomeScreenState extends State<BodyHomeScreen> {
-  List<Quote> listQuotes = List<Quote>();
+  List<Quote> _listQuotes = List<Quote>();
 
   bool _loading = true;
 
-  void getQuotes() async {
-    Quotes quotes = Quotes();
+  String _url = "https://bash.im/abyss";
+  String _urlWantMore;
+
+  void getQuotes(_url) async {
+    Quotes quotes = Quotes(url: _url);
     await quotes.getQuotes();
-    listQuotes = quotes.quotesData;
+    _listQuotes = quotes.quotesData;
+    //delete string 'abyss', for example /abyss?23763 -> ?23763
+
+    _urlWantMore = quotes.linkOnNextPage.substring(6);
 
     setState(() {
       _loading = false;
@@ -58,7 +66,7 @@ class _BodyHomeScreenState extends State<BodyHomeScreen> {
   @override
   void initState() {
     super.initState();
-    getQuotes();
+    getQuotes(_url);
   }
 
   @override
@@ -74,9 +82,10 @@ class _BodyHomeScreenState extends State<BodyHomeScreen> {
                   height: 7.5,
                 ),
                 ListView.builder(
+                  // key: ObjectKey(_listQuotes[0]),
                   physics: ClampingScrollPhysics(),
                   shrinkWrap: true,
-                  itemCount: listQuotes.length,
+                  itemCount: _listQuotes.length,
                   scrollDirection: Axis.vertical,
                   itemBuilder: (context, index) {
                     return Padding(
@@ -85,15 +94,40 @@ class _BodyHomeScreenState extends State<BodyHomeScreen> {
                       child: Card(
                         elevation: 5,
                         child: ListTile(
-                          title: Text(listQuotes[index].quoteNumber),
-                          subtitle: Text(listQuotes[index].quoteBody),
+                          title: Text(_listQuotes[index].quoteNumber),
+                          subtitle: Text(_listQuotes[index].quoteBody),
                         ),
                       ),
                     );
                   },
                 ),
+                RaisedButton(
+                    onPressed: () {
+                      String newUrl = "$_url$_urlWantMore";
+                      setState(() {
+                        getQuotes(newUrl);
+                      });
+                    },
+                    color: Colors.white,
+                    padding: EdgeInsets.all(10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Want'),
+                        Text(
+                          ' more->',
+                          style: TextStyle(color: orangeColor),
+                        ),
+                      ],
+                    )),
               ],
             ),
           );
   }
 }
+
+// String parseForWantMore() {
+//   dom.Document document = dom.Document();
+
+//   return newUrl;
+// }
